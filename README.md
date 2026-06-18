@@ -14,7 +14,7 @@
    ```
    ブラウザで `http://localhost:8000` を開きます。
 2. 左サイドバーの「ユーザー情報レイヤーを表示」チェックボックスでプロットの表示/非表示を切り替えられます。
-3. 「Geocodeツール」で名称・住所を入力すると、[Nominatim](https://nominatim.openstreetmap.org/)（OpenStreetMapのジオコーディングAPI）で住所から緯度・経度を検索し、地図上にプロットを自動登録します。
+3. 「Geocodeツール」で名称・住所を入力すると、[Nominatim](https://nominatim.openstreetmap.org/)（OpenStreetMapのジオコーディングAPI）で住所から緯度・経度を検索し、地図上にプロットを自動登録します。Nominatimで見つからない場合は[国土地理院（GSI）の住所検索API](https://msearch.gsi.go.jp/address-search/AddressSearch)に自動でフォールバックします（会社名付きの住所や郵便番号は自動で除去して検索します）。
 4. 登録したプロットはブラウザの `localStorage` に保存されます。「サンプルデータに戻す」で初期データ（`webapp/data/points.json`）にリセットできます。
 
 ### 注意事項

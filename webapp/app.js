@@ -1,6 +1,31 @@
 const STORAGE_KEY = "smap_points";
 const DEFAULT_DATA_URL = "data/points.json";
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
+const GSI_URL = "https://msearch.gsi.go.jp/address-search/AddressSearch";
+
+function cleanAddress(address) {
+  // 郵便番号（〒123-4567 など）を取り除き、ジオコーディングしやすい形にする
+  return address.replace(/〒?\d{3}-?\d{4}/g, "").trim();
+}
+
+async function geocodeWithNominatim(address) {
+  const url = `${NOMINATIM_URL}?format=json&limit=1&q=${encodeURIComponent(address)}`;
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  if (!res.ok) throw new Error("Nominatimへのリクエストに失敗しました");
+  const results = await res.json();
+  if (!results.length) return null;
+  return { lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon) };
+}
+
+async function geocodeWithGsi(address) {
+  const url = `${GSI_URL}?q=${encodeURIComponent(address)}`;
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  if (!res.ok) throw new Error("国土地理院APIへのリクエストに失敗しました");
+  const results = await res.json();
+  if (!results.length) return null;
+  const [lng, lat] = results[0].geometry.coordinates;
+  return { lat, lng };
+}
 
 const map = L.map("map").setView([35.681236, 139.767125], 6);
 
@@ -99,27 +124,30 @@ document.getElementById("geocode-form").addEventListener("submit", async (e) => 
 
   status.textContent = "検索中...";
   try {
-    const url = `${NOMINATIM_URL}?format=json&limit=1&q=${encodeURIComponent(address)}`;
-    const res = await fetch(url, { headers: { Accept: "application/json" } });
-    if (!res.ok) throw new Error("リクエストに失敗しました");
-    const results = await res.json();
-    if (!results.length) {
+    const cleaned = cleanAddress(address);
+    let coords = await geocodeWithNominatim(cleaned);
+    let source = "Nominatim";
+    if (!coords) {
+      status.textContent = "Nominatimで見つからないため国土地理院APIで再検索中...";
+      coords = await geocodeWithGsi(cleaned);
+      source = "国土地理院";
+    }
+    if (!coords) {
       status.textContent = "座標が見つかりませんでした。住所を確認してください。";
       return;
     }
-    const { lat, lon } = results[0];
     const newPoint = {
       id: `pt-${Date.now()}`,
       name,
       address,
-      lat: parseFloat(lat),
-      lng: parseFloat(lon),
+      lat: coords.lat,
+      lng: coords.lng,
     };
     points.push(newPoint);
     savePoints();
     renderAll();
     map.setView([newPoint.lat, newPoint.lng], 15);
-    status.textContent = `登録しました: (${newPoint.lat.toFixed(5)}, ${newPoint.lng.toFixed(5)})`;
+    status.textContent = `登録しました [${source}]: (${newPoint.lat.toFixed(5)}, ${newPoint.lng.toFixed(5)})`;
     e.target.reset();
   } catch (err) {
     status.textContent = `エラー: ${err.message}`;

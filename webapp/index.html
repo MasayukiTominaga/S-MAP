@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S-MAP - OpenStreetMap ビューア</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="sidebar">
+    <h1>S-MAP</h1>
+
+    <section class="panel">
+      <h2>レイヤー</h2>
+      <label class="layer-toggle">
+        <input type="checkbox" id="toggle-points-layer" checked>
+        ユーザー情報レイヤーを表示
+      </label>
+      <p class="hint">座標・住所・名称を持つプロットの表示/非表示を切り替えます。</p>
+    </section>
+
+    <section class="panel">
+      <h2>Geocodeツール（住所→座標変換）</h2>
+      <form id="geocode-form">
+        <label>名称
+          <input type="text" id="geocode-name" placeholder="例：東京タワー" required>
+        </label>
+        <label>住所
+          <input type="text" id="geocode-address" placeholder="例：東京都港区芝公園4丁目2-8" required>
+        </label>
+        <button type="submit">検索して登録</button>
+      </form>
+      <p id="geocode-status" class="hint"></p>
+    </section>
+
+    <section class="panel">
+      <h2>登録済みプロット一覧</h2>
+      <ul id="points-list"></ul>
+      <button id="reset-points" class="secondary">サンプルデータに戻す</button>
+    </section>
+  </div>
+
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
